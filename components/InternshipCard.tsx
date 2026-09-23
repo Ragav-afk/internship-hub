@@ -1,0 +1,40 @@
+import { Bookmark, Briefcase, Clock, MapPin } from "lucide-react";
+import { Internship } from "@/lib/types";
+import { formatPostedAt, formatStipend } from "@/lib/format";
+
+interface InternshipCardProps {
+  internship: Internship;
+}
+
+export default function InternshipCard({ internship }: InternshipCardProps) {
+  return (
+    <article className="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition hover:border-blue-400 hover:shadow-md">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="font-semibold text-gray-900">{internship.title}</h3>
+          <p className="text-sm text-gray-600">{internship.company}</p>
+        </div>
+        <Bookmark className="h-5 w-5 text-gray-400" />
+      </div>
+
+      <div className="mt-3 flex flex-col gap-1.5 text-sm text-gray-600">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-gray-400" />
+          <span>
+            {internship.city} · {internship.work_mode}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Briefcase className="h-4 w-4 text-gray-400" />
+          <span>{formatStipend(internship)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-gray-400" />
+          <span>
+            {internship.duration} · {formatPostedAt(internship.posted_at)}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
