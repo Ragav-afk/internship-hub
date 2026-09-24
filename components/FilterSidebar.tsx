@@ -56,23 +56,17 @@ export default function FilterSidebar() {
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-semibold text-gray-700">Stipend (₹/month)</legend>
+        <legend className="mb-2 text-sm font-semibold text-gray-700">Minimum stipend</legend>
         <div className="flex flex-col gap-2">
           <input
             type="range"
             min={0}
             max={50000}
+            step={5000}
             defaultValue={0}
             className="w-full accent-blue-600"
           />
-          <input
-            type="range"
-            min={0}
-            max={50000}
-            defaultValue={50000}
-            className="w-full accent-blue-600"
-          />
-          <p className="text-xs text-gray-500">₹0 – ₹50,000+ /month</p>
+          <p className="text-xs text-gray-500">₹0/month and up</p>
         </div>
       </fieldset>
     </aside>

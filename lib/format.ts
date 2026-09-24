@@ -1,5 +1,11 @@
 import { Internship } from "./types";
 
+type LocationFields = Pick<Internship, "city" | "work_mode">;
+
+export function formatLocation({ city, work_mode }: LocationFields): string {
+  return city === work_mode ? city : `${city} · ${work_mode}`;
+}
+
 type StipendFields = Pick<Internship, "stipend_min" | "stipend_max" | "stipend_note">;
 
 export function formatStipend({ stipend_min, stipend_max, stipend_note }: StipendFields): string {

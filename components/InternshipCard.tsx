@@ -1,6 +1,6 @@
 import { Bookmark, Briefcase, Clock, MapPin } from "lucide-react";
 import { Internship } from "@/lib/types";
-import { formatPostedAt, formatStipend } from "@/lib/format";
+import { formatLocation, formatPostedAt, formatStipend } from "@/lib/format";
 
 interface InternshipCardProps {
   internship: Internship;
@@ -20,9 +20,7 @@ export default function InternshipCard({ internship }: InternshipCardProps) {
       <div className="mt-3 flex flex-col gap-1.5 text-sm text-gray-600">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-gray-400" />
-          <span>
-            {internship.city} · {internship.work_mode}
-          </span>
+          <span>{formatLocation(internship)}</span>
         </div>
         <div className="flex items-center gap-2">
           <Briefcase className="h-4 w-4 text-gray-400" />

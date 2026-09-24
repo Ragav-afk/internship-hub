@@ -1,6 +1,6 @@
 import { Briefcase, Clock, MapPin } from "lucide-react";
 import { Internship } from "@/lib/types";
-import { formatPostedAt, formatStipend } from "@/lib/format";
+import { formatLocation, formatPostedAt, formatStipend } from "@/lib/format";
 
 interface InternshipDetailPanelProps {
   internship: Internship;
@@ -8,16 +8,14 @@ interface InternshipDetailPanelProps {
 
 export default function InternshipDetailPanel({ internship }: InternshipDetailPanelProps) {
   return (
-    <div className="h-full w-96 shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-6">
+    <div className="h-full w-[30rem] shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-6">
       <h2 className="text-xl font-semibold text-gray-900">{internship.title}</h2>
       <p className="mt-1 text-gray-600">{internship.company}</p>
 
       <div className="mt-4 flex flex-col gap-2 text-sm text-gray-600">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-gray-400" />
-          <span>
-            {internship.city} · {internship.work_mode}
-          </span>
+          <span>{formatLocation(internship)}</span>
         </div>
         <div className="flex items-center gap-2">
           <Briefcase className="h-4 w-4 text-gray-400" />
