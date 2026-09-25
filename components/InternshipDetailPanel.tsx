@@ -3,10 +3,18 @@ import { Internship } from "@/lib/types";
 import { formatLocation, formatPostedAt, formatStipend } from "@/lib/format";
 
 interface InternshipDetailPanelProps {
-  internship: Internship;
+  internship: Internship | null;
 }
 
 export default function InternshipDetailPanel({ internship }: InternshipDetailPanelProps) {
+  if (internship === null) {
+    return (
+      <div className="h-full w-[30rem] shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-6">
+        <p className="text-sm text-gray-500">Select an internship to see details here.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-[30rem] shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-6">
       <h2 className="text-xl font-semibold text-gray-900">{internship.title}</h2>

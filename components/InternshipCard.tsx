@@ -4,11 +4,20 @@ import { formatLocation, formatPostedAt, formatStipend } from "@/lib/format";
 
 interface InternshipCardProps {
   internship: Internship;
+  isSelected: boolean;
+  onClick: () => void;
 }
 
-export default function InternshipCard({ internship }: InternshipCardProps) {
+export default function InternshipCard({ internship, isSelected, onClick }: InternshipCardProps) {
   return (
-    <article className="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition hover:border-blue-400 hover:shadow-md">
+    <article
+      onClick={onClick}
+      className={`cursor-pointer rounded-lg border p-4 transition hover:shadow-md ${
+        isSelected
+          ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+          : "border-gray-200 bg-white hover:border-blue-400"
+      }`}
+    >
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-gray-900">{internship.title}</h3>

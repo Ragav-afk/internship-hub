@@ -1,6 +1,11 @@
 import { Search } from "lucide-react";
 
-export default function Navbar() {
+interface NavbarProps {
+  searchText: string;
+  onSearchChange: (value: string) => void;
+}
+
+export default function Navbar({ searchText, onSearchChange }: NavbarProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-6 border-b border-gray-200 bg-white px-6">
       <span className="text-xl font-bold text-blue-700">Internship Hub</span>
@@ -10,6 +15,8 @@ export default function Navbar() {
         <input
           type="text"
           placeholder="Search internships..."
+          value={searchText}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none"
         />
       </div>
