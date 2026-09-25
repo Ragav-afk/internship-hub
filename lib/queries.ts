@@ -16,3 +16,20 @@ export async function getInternships(): Promise<Internship[]> {
 
   return data ?? [];
 }
+
+export async function getInternshipById(id: string): Promise<Internship | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("internships")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to fetch internship:", error.message);
+    return null;
+  }
+
+  return data ?? null;
+}

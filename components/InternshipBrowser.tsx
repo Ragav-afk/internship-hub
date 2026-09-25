@@ -19,6 +19,7 @@ export default function InternshipBrowser({ internships }: InternshipBrowserProp
   const [selectedWorkModes, setSelectedWorkModes] = useState<WorkMode[]>([]);
   const [minStipend, setMinStipend] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   function toggleField(field: string) {
     setSelectedFields((prev) =>
@@ -52,6 +53,12 @@ export default function InternshipBrowser({ internships }: InternshipBrowserProp
   const selectedInternship =
     filteredInternships.find((i) => i.id === selectedId) ?? filteredInternships[0] ?? null;
 
+  const activeFilterCount =
+    selectedFields.length +
+    selectedCities.length +
+    selectedWorkModes.length +
+    (minStipend > 0 ? 1 : 0);
+
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Navbar searchText={searchText} onSearchChange={setSearchText} />
@@ -67,11 +74,15 @@ export default function InternshipBrowser({ internships }: InternshipBrowserProp
           onWorkModeToggle={toggleWorkMode}
           minStipend={minStipend}
           onMinStipendChange={setMinStipend}
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
         />
         <InternshipList
           internships={filteredInternships}
           selectedId={selectedInternship?.id ?? null}
           onSelect={setSelectedId}
+          activeFilterCount={activeFilterCount}
+          onOpenFilters={() => setIsFilterOpen(true)}
         />
         <InternshipDetailPanel internship={selectedInternship} />
       </div>

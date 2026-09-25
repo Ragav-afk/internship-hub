@@ -7,10 +7,10 @@ interface NavbarProps {
 
 export default function Navbar({ searchText, onSearchChange }: NavbarProps) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-6 border-b border-gray-200 bg-white px-6">
-      <span className="text-xl font-bold text-blue-700">Internship Hub</span>
+    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4 lg:gap-6 lg:px-6">
+      <span className="shrink-0 text-lg font-bold text-blue-700 lg:text-xl">Internship Hub</span>
 
-      <div className="relative flex-1 max-w-md">
+      <div className="relative min-w-0 flex-1 max-w-md">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
@@ -21,11 +21,11 @@ export default function Navbar({ searchText, onSearchChange }: NavbarProps) {
         />
       </div>
 
-      <div className="ml-auto flex items-center gap-4">
-        <button className="text-sm font-medium text-gray-700 hover:text-blue-700">
+      <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-4">
+        <button className="shrink-0 whitespace-nowrap text-xs font-medium text-gray-700 hover:text-blue-700 lg:text-sm">
           Log in
         </button>
-        <button className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+        <button className="shrink-0 whitespace-nowrap rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 lg:px-4 lg:py-2 lg:text-sm">
           Sign up
         </button>
       </div>

@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { WorkMode } from "@/lib/types";
 
 const workModes: WorkMode[] = ["Remote", "On-site", "Hybrid"];
@@ -16,6 +17,9 @@ interface FilterSidebarProps {
 
   minStipend: number;
   onMinStipendChange: (value: number) => void;
+
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export default function FilterSidebar({
@@ -29,10 +33,30 @@ export default function FilterSidebar({
   onWorkModeToggle,
   minStipend,
   onMinStipendChange,
+  isOpen,
+  onClose,
 }: FilterSidebarProps) {
   return (
-    <aside className="h-full w-64 shrink-0 overflow-y-auto border-r border-gray-200 bg-white p-4">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Filters</h2>
+    <>
+      {isOpen && (
+        <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={onClose} />
+      )}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 h-full w-64 shrink-0 overflow-y-auto border-r border-gray-200 bg-white p-4 transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close filters"
+          className="rounded-md p-1 text-gray-500 hover:bg-gray-100 lg:hidden"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
 
       <fieldset className="mb-6">
         <legend className="mb-2 text-sm font-semibold text-gray-700">Field</legend>
@@ -102,6 +126,7 @@ export default function FilterSidebar({
           </p>
         </div>
       </fieldset>
-    </aside>
+      </aside>
+    </>
   );
 }
