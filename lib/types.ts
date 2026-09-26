@@ -1,5 +1,9 @@
 export type WorkMode = "Remote" | "On-site" | "Hybrid";
 
+export interface AuthUser {
+  email: string;
+}
+
 export interface Internship {
   id: string;
   title: string;

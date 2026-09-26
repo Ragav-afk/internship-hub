@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { Internship } from "@/lib/types";
+import { AuthUser, Internship } from "@/lib/types";
 
 export async function getInternships(): Promise<Internship[]> {
   const supabase = await createClient();
@@ -32,4 +32,15 @@ export async function getInternshipById(id: string): Promise<Internship | null> 
   }
 
   return data ?? null;
+}
+
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  const supabase = await createClient();
+
+  // getUser() returns an error whenever there's no logged-in session, which
+  // is the normal state for a visitor who hasn't signed in - not worth
+  // logging as a failure.
+  const { data } = await supabase.auth.getUser();
+
+  return data.user ? { email: data.user.email ?? "" } : null;
 }

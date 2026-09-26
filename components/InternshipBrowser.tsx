@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Internship, WorkMode } from "@/lib/types";
+import { AuthUser, Internship, WorkMode } from "@/lib/types";
 import { filterInternships, getCityOptions, getFieldOptions } from "@/lib/filters";
 import { parseFiltersFromParams } from "@/lib/searchParams";
 import Navbar from "@/components/Navbar";
@@ -12,6 +12,7 @@ import InternshipDetailPanel from "@/components/InternshipDetailPanel";
 
 interface InternshipBrowserProps {
   internships: Internship[];
+  user: AuthUser | null;
 }
 
 // How long to wait after the last keystroke before writing the search text
@@ -20,7 +21,7 @@ interface InternshipBrowserProps {
 // on every single letter typed.
 const SEARCH_DEBOUNCE_MS = 400;
 
-export default function InternshipBrowser({ internships }: InternshipBrowserProps) {
+export default function InternshipBrowser({ internships, user }: InternshipBrowserProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -133,7 +134,7 @@ export default function InternshipBrowser({ internships }: InternshipBrowserProp
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Navbar searchText={searchText} onSearchChange={setSearchText} />
+      <Navbar searchText={searchText} onSearchChange={setSearchText} user={user} />
       <div className="flex flex-1 overflow-hidden">
         <FilterSidebar
           fieldOptions={fieldOptions}
