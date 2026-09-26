@@ -83,24 +83,37 @@ Row-level security: `favorites` needs RLS policies so a user can only read/inser
 rows (`user_id = auth.uid()`). Add this in the Favorites build step, not before — auth needs to
 exist first.
 
+## Current state
+
+- `components/InternshipBrowser.tsx` owns all client-side state (search text, filter selections,
+  selected internship id, filter-drawer open/closed) — the only component using `useState`.
+- `lib/filters.ts` holds the pure filtering logic (`filterInternships`, `getFieldOptions`,
+  `getCityOptions`), kept separate from the Supabase-fetching code.
+- `lib/queries.ts` has `getInternships()` and `getInternshipById()`.
+- Responsive behavior is driven by Tailwind's `lg` breakpoint (1024px); `MOBILE_BREAKPOINT_PX` in
+  `lib/constants.ts` must be kept in sync with it for the mobile-vs-desktop click routing in
+  `components/InternshipList.tsx`.
+
 ## Build steps
 
 Work through these in order; each step is one shippable feature on top of the last.
 
 0. Project setup — scaffold Next.js + TypeScript + Tailwind, create the Supabase project, wire up
-   `.env.local`.
-1. Static layout — navbar/sidebar/list/detail-panel skeleton with hardcoded fake data.
-2. Database + seed data — create the `internships` table, insert ~15 sample rows via `seed.sql`.
-3. Real data on the list — replace hardcoded data with a live Supabase fetch.
-4. Keyword search — search bar filters by title/company.
-5. Filter sidebar — filter by field, city/work_mode, and stipend range.
-6. Detail panel — clicking a card shows full details on the right (own page on mobile).
-7. Responsive pass — collapse the 3-column layout into a stacked mobile view.
+   `.env.local`. (done)
+1. Static layout — navbar/sidebar/list/detail-panel skeleton with hardcoded fake data. (done)
+2. Database + seed data — create the `internships` table, insert ~15 sample rows via `seed.sql`. (done)
+3. Real data on the list — replace hardcoded data with a live Supabase fetch. (done)
+4. Keyword search — search bar filters by title/company. (done)
+5. Filter sidebar — filter by field, city/work_mode, and stipend range. (done)
+6. Detail panel — clicking a card shows full details on the right (own page on mobile). (done)
+7. Responsive pass — collapse the 3-column layout into a stacked mobile view. (done)
+7.5. Move filter and search state into URL query parameters so filtered views survive a refresh
+     and can be shared as links.
 8. Auth — sign up / log in / log out with Supabase email+password; navbar reflects login state.
 9. Favorites — favorite button, `favorites` table + RLS policies, "My Favorites" page.
 10. Polish + deploy — loading/empty/error states, then deploy to Vercel.
 
 ## Commands
 
-Not yet available — this repo is pre-scaffold (step 0 above hasn't run yet). Once the Next.js app
-is created, add the actual `npm run dev` / `build` / `lint` commands here.
+- `npm run dev` — start the local dev server.
+- `npm run lint` — run ESLint.
