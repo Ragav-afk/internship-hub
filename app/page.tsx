@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import InternshipBrowser from "@/components/InternshipBrowser";
 import { getInternships } from "@/lib/queries";
 
@@ -12,5 +13,11 @@ export default async function Home() {
     );
   }
 
-  return <InternshipBrowser internships={internships} />;
+  // InternshipBrowser reads filters from the URL via useSearchParams, which
+  // Next.js requires to be inside a Suspense boundary.
+  return (
+    <Suspense fallback={null}>
+      <InternshipBrowser internships={internships} />
+    </Suspense>
+  );
 }
