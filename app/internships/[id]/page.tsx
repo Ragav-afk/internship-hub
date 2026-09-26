@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import InternshipDetails from "@/components/InternshipDetails";
-import { getCurrentUser, getInternshipById } from "@/lib/queries";
+import { getCurrentUser, getFavoriteInternshipIds, getInternshipById } from "@/lib/queries";
 
 interface InternshipDetailPageProps {
   params: Promise<{ id: string }>;
@@ -10,7 +10,11 @@ interface InternshipDetailPageProps {
 
 export default async function InternshipDetailPage({ params }: InternshipDetailPageProps) {
   const { id } = await params;
-  const [internship, user] = await Promise.all([getInternshipById(id), getCurrentUser()]);
+  const [internship, user, favoriteIds] = await Promise.all([
+    getInternshipById(id),
+    getCurrentUser(),
+    getFavoriteInternshipIds(),
+  ]);
 
   if (internship === null) {
     return (
@@ -38,7 +42,11 @@ export default async function InternshipDetailPage({ params }: InternshipDetailP
           Back to internships
         </Link>
         <div className="mt-4">
-          <InternshipDetails internship={internship} />
+          <InternshipDetails
+            internship={internship}
+            isFavorited={favoriteIds.has(internship.id)}
+            isLoggedIn={user !== null}
+          />
         </div>
       </div>
     </div>

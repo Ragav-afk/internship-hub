@@ -30,6 +30,12 @@ export default function Navbar({ searchText, onSearchChange, user }: NavbarProps
       <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-4">
         {user ? (
           <>
+            <Link
+              href="/favorites"
+              className="shrink-0 whitespace-nowrap text-xs font-medium text-gray-700 hover:text-blue-700 lg:text-sm"
+            >
+              My Favourites
+            </Link>
             <span className="hidden shrink-0 whitespace-nowrap text-xs text-gray-600 sm:inline lg:text-sm">
               {user.email}
             </span>

@@ -1,9 +1,13 @@
 import { Suspense } from "react";
 import InternshipBrowser from "@/components/InternshipBrowser";
-import { getCurrentUser, getInternships } from "@/lib/queries";
+import { getCurrentUser, getFavoriteInternshipIds, getInternships } from "@/lib/queries";
 
 export default async function Home() {
-  const [internships, user] = await Promise.all([getInternships(), getCurrentUser()]);
+  const [internships, user, favoriteIds] = await Promise.all([
+    getInternships(),
+    getCurrentUser(),
+    getFavoriteInternshipIds(),
+  ]);
 
   if (internships.length === 0) {
     return (
@@ -17,7 +21,11 @@ export default async function Home() {
   // Next.js requires to be inside a Suspense boundary.
   return (
     <Suspense fallback={null}>
-      <InternshipBrowser internships={internships} user={user} />
+      <InternshipBrowser
+        internships={internships}
+        user={user}
+        favoriteIds={[...favoriteIds]}
+      />
     </Suspense>
   );
 }

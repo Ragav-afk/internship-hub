@@ -44,3 +44,44 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
   return data.user ? { email: data.user.email ?? "" } : null;
 }
+
+// No explicit user filter needed on either of these - row-level security
+// already scopes "favorites" to the current user's own rows, so a
+// logged-out visitor (or anyone else's rows) just comes back empty.
+
+export async function getFavoriteInternshipIds(): Promise<Set<string>> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("favorites").select("internship_id");
+
+  if (error) {
+    console.error("Failed to fetch favorites:", error.message);
+    return new Set();
+  }
+
+  return new Set((data ?? []).map((row) => row.internship_id));
+}
+
+export async function getFavoriteInternships(): Promise<Internship[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("internships(*)")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch favorite internships:", error.message);
+    return [];
+  }
+
+  // Supabase's type inference assumes an embedded relation could be
+  // one-to-many (an array) since it has no generated schema to check - but
+  // internship_id is a plain foreign key, so each row really has exactly one
+  // internship (or none, if it was since deleted).
+  const rows = (data ?? []) as unknown as { internships: Internship | null }[];
+
+  return rows
+    .map((row) => row.internships)
+    .filter((internship): internship is Internship => internship !== null);
+}

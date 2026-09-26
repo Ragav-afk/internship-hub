@@ -13,6 +13,7 @@ import InternshipDetailPanel from "@/components/InternshipDetailPanel";
 interface InternshipBrowserProps {
   internships: Internship[];
   user: AuthUser | null;
+  favoriteIds: string[];
 }
 
 // How long to wait after the last keystroke before writing the search text
@@ -21,10 +22,17 @@ interface InternshipBrowserProps {
 // on every single letter typed.
 const SEARCH_DEBOUNCE_MS = 400;
 
-export default function InternshipBrowser({ internships, user }: InternshipBrowserProps) {
+export default function InternshipBrowser({
+  internships,
+  user,
+  favoriteIds,
+}: InternshipBrowserProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const favoriteIdSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+  const isLoggedIn = user !== null;
 
   const filters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
@@ -156,8 +164,14 @@ export default function InternshipBrowser({ internships, user }: InternshipBrows
           onSelect={selectInternship}
           activeFilterCount={activeFilterCount}
           onOpenFilters={() => setIsFilterOpen(true)}
+          favoriteIds={favoriteIdSet}
+          isLoggedIn={isLoggedIn}
         />
-        <InternshipDetailPanel internship={selectedInternship} />
+        <InternshipDetailPanel
+          internship={selectedInternship}
+          isFavorited={selectedInternship ? favoriteIdSet.has(selectedInternship.id) : false}
+          isLoggedIn={isLoggedIn}
+        />
       </div>
     </div>
   );

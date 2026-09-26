@@ -1,14 +1,23 @@
-import { Bookmark, Briefcase, Clock, MapPin } from "lucide-react";
+import { Briefcase, Clock, MapPin } from "lucide-react";
 import { Internship } from "@/lib/types";
 import { formatLocation, formatPostedAt, formatStipend } from "@/lib/format";
+import FavoriteButton from "@/components/FavoriteButton";
 
 interface InternshipCardProps {
   internship: Internship;
   isSelected: boolean;
+  isFavorited: boolean;
+  isLoggedIn: boolean;
   onClick: () => void;
 }
 
-export default function InternshipCard({ internship, isSelected, onClick }: InternshipCardProps) {
+export default function InternshipCard({
+  internship,
+  isSelected,
+  isFavorited,
+  isLoggedIn,
+  onClick,
+}: InternshipCardProps) {
   return (
     <article
       onClick={onClick}
@@ -23,7 +32,11 @@ export default function InternshipCard({ internship, isSelected, onClick }: Inte
           <h3 className="font-semibold text-gray-900">{internship.title}</h3>
           <p className="text-sm text-gray-600">{internship.company}</p>
         </div>
-        <Bookmark className="h-5 w-5 text-gray-400" />
+        <FavoriteButton
+          internshipId={internship.id}
+          initialFavorited={isFavorited}
+          isLoggedIn={isLoggedIn}
+        />
       </div>
 
       <div className="mt-3 flex flex-col gap-1.5 text-sm text-gray-600">

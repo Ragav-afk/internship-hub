@@ -1,16 +1,32 @@
 import { Briefcase, Clock, MapPin } from "lucide-react";
 import { Internship } from "@/lib/types";
 import { formatLocation, formatPostedAt, formatStipend } from "@/lib/format";
+import FavoriteButton from "@/components/FavoriteButton";
 
 interface InternshipDetailsProps {
   internship: Internship;
+  isFavorited: boolean;
+  isLoggedIn: boolean;
 }
 
-export default function InternshipDetails({ internship }: InternshipDetailsProps) {
+export default function InternshipDetails({
+  internship,
+  isFavorited,
+  isLoggedIn,
+}: InternshipDetailsProps) {
   return (
     <>
-      <h2 className="text-xl font-semibold text-gray-900">{internship.title}</h2>
-      <p className="mt-1 text-gray-600">{internship.company}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">{internship.title}</h2>
+          <p className="mt-1 text-gray-600">{internship.company}</p>
+        </div>
+        <FavoriteButton
+          internshipId={internship.id}
+          initialFavorited={isFavorited}
+          isLoggedIn={isLoggedIn}
+        />
+      </div>
 
       <div className="mt-4 flex flex-col gap-2 text-sm text-gray-600">
         <div className="flex items-center gap-2">
