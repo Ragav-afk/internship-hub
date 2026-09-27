@@ -8,6 +8,7 @@ interface InternshipCardProps {
   isSelected: boolean;
   isFavorited: boolean;
   isLoggedIn: boolean;
+  onToggleFavorite: (id: string, next: boolean) => void;
   onClick: () => void;
 }
 
@@ -16,12 +17,26 @@ export default function InternshipCard({
   isSelected,
   isFavorited,
   isLoggedIn,
+  onToggleFavorite,
   onClick,
 }: InternshipCardProps) {
   return (
     <article
       onClick={onClick}
-      className={`cursor-pointer rounded-lg border p-4 transition hover:shadow-md ${
+      onKeyDown={(event) => {
+        // Ignore keydowns that bubbled up from a focused child (e.g. the
+        // bookmark button) - only handle Enter/Space when the card itself is
+        // focused, so activating the bookmark doesn't also select the card.
+        if (event.target !== event.currentTarget) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-current={isSelected ? "true" : undefined}
+      className={`cursor-pointer rounded-lg border p-4 transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
         isSelected
           ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
           : "border-gray-200 bg-white hover:border-blue-400"
@@ -34,8 +49,9 @@ export default function InternshipCard({
         </div>
         <FavoriteButton
           internshipId={internship.id}
-          initialFavorited={isFavorited}
+          isFavorited={isFavorited}
           isLoggedIn={isLoggedIn}
+          onToggle={onToggleFavorite}
         />
       </div>
 

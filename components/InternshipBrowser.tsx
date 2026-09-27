@@ -31,8 +31,25 @@ export default function InternshipBrowser({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const favoriteIdSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+  // Seeded once from the server-fetched prop, same pattern as searchText below -
+  // after that, toggling a favorite updates this directly so the list card and
+  // detail panel (which both read from this same state) never disagree.
+  const [favoriteIdSet, setFavoriteIdSet] = useState<Set<string>>(
+    () => new Set(favoriteIds)
+  );
   const isLoggedIn = user !== null;
+
+  function handleToggleFavorite(id: string, next: boolean) {
+    setFavoriteIdSet((prev) => {
+      const updated = new Set(prev);
+      if (next) {
+        updated.add(id);
+      } else {
+        updated.delete(id);
+      }
+      return updated;
+    });
+  }
 
   const filters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
@@ -166,11 +183,13 @@ export default function InternshipBrowser({
           onOpenFilters={() => setIsFilterOpen(true)}
           favoriteIds={favoriteIdSet}
           isLoggedIn={isLoggedIn}
+          onToggleFavorite={handleToggleFavorite}
         />
         <InternshipDetailPanel
           internship={selectedInternship}
           isFavorited={selectedInternship ? favoriteIdSet.has(selectedInternship.id) : false}
           isLoggedIn={isLoggedIn}
+          onToggleFavorite={handleToggleFavorite}
         />
       </div>
     </div>

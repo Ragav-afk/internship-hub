@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import InternshipDetails from "@/components/InternshipDetails";
+import InternshipDetailMobile from "@/components/InternshipDetailMobile";
 import { getCurrentUser, getFavoriteInternshipIds, getInternshipById } from "@/lib/queries";
 
 interface InternshipDetailPageProps {
@@ -42,9 +42,9 @@ export default async function InternshipDetailPage({ params }: InternshipDetailP
           Back to internships
         </Link>
         <div className="mt-4">
-          <InternshipDetails
+          <InternshipDetailMobile
             internship={internship}
-            isFavorited={favoriteIds.has(internship.id)}
+            initialFavorited={favoriteIds.has(internship.id)}
             isLoggedIn={user !== null}
           />
         </div>

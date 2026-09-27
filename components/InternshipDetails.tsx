@@ -7,12 +7,14 @@ interface InternshipDetailsProps {
   internship: Internship;
   isFavorited: boolean;
   isLoggedIn: boolean;
+  onToggleFavorite: (id: string, next: boolean) => void;
 }
 
 export default function InternshipDetails({
   internship,
   isFavorited,
   isLoggedIn,
+  onToggleFavorite,
 }: InternshipDetailsProps) {
   return (
     <>
@@ -23,8 +25,9 @@ export default function InternshipDetails({
         </div>
         <FavoriteButton
           internshipId={internship.id}
-          initialFavorited={isFavorited}
+          isFavorited={isFavorited}
           isLoggedIn={isLoggedIn}
+          onToggle={onToggleFavorite}
         />
       </div>
 

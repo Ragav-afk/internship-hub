@@ -41,7 +41,7 @@ lib/
   queries.ts               # functions that fetch/filter internships from Supabase
 supabase/
   seed.sql                # sample internship rows, inserted manually (no scraping/admin UI yet)
-middleware.ts            # keeps the Supabase auth session alive across pages
+proxy.ts                # keeps the Supabase auth session alive across pages
 ```
 
 ## Database schema (Supabase/Postgres)
@@ -100,22 +100,24 @@ exist first.
   `lib/authErrors.ts`.
 - Favorites: the `favorites` table + RLS policies live in `supabase/favorites.sql` (run manually in
   the Supabase dashboard, same as `seed.sql` — not applied automatically).
-  `components/FavoriteButton.tsx` is self-contained: it holds its own local saved/unsaved
-  `useState`, initialized once from a server-fetched prop, and calls the add/remove Server Actions
-  in `lib/favoriteActions.ts` itself.
+  `components/FavoriteButton.tsx` is a controlled component: the saved/unsaved boolean lives one
+  level up (`InternshipBrowser`'s `favoriteIdSet` state on the desktop browse page, a small
+  `useState` in `FavoritesGrid`/`InternshipDetailMobile` elsewhere) and flows in as an `isFavorited`
+  prop; the button calls `onToggle(id, next)` to update it and still makes the add/remove Server
+  Action calls in `lib/favoriteActions.ts` itself. This keeps the list card and detail panel for the
+  same internship always in sync.
 - Responsive behavior is driven by Tailwind's `lg` breakpoint (1024px); `MOBILE_BREAKPOINT_PX` in
   `lib/constants.ts` must be kept in sync with it for the mobile-vs-desktop click routing in
   `components/InternshipList.tsx`.
-
-### Known issues
-
-- Each `FavoriteButton` holds its own local state instead of sharing one central store, so on
-  desktop the list card and the detail panel can briefly show different saved/unsaved states for
-  the *same* internship — toggling one doesn't update the other until you reselect the card or
-  refresh.
-- `middleware.ts` uses a file convention Next.js 16 has deprecated in favor of `proxy.ts` (same
-  behavior, new name/export). It still works today, but should be renamed before deploying — see
-  the deprecation warning `npm run build` prints.
+- `lib/queries.ts`'s `getInternships()` and `getInternshipById()` throw on a Supabase error (caught
+  by `app/error.tsx`) instead of silently returning an empty result — so a genuine outage now looks
+  different from "no rows found." `getCurrentUser()` and `getFavoriteInternshipIds()` still swallow
+  errors and fall back to "logged out"/"no favorites," since failing those shouldn't block the whole
+  page. `app/loading.tsx` and `app/internships/[id]/loading.tsx` show skeleton placeholders while
+  each page's data fetch is in flight.
+- Cards (`components/InternshipCard.tsx`) are keyboard-accessible: `role="button"`, `tabIndex={0}`,
+  and an `onKeyDown` that activates on Enter/Space (guarded so a bubbled keydown from the focused
+  bookmark button doesn't also select the card).
 
 ## Build steps
 
@@ -134,8 +136,8 @@ Work through these in order; each step is one shippable feature on top of the la
      and can be shared as links. (done)
 8. Auth — sign up / log in / log out with Supabase email+password; navbar reflects login state. (done)
 9. Favorites — favorite button, `favorites` table + RLS policies, "My Favorites" page. (done)
-10. Polish + deploy — loading/empty/error states, then deploy to Vercel. (rename `middleware.ts` to
-    `proxy.ts` as part of this step — see Known issues above)
+10. Polish + deploy — loading/empty/error states, keyboard accessibility, fix favorite-state sync,
+    rename `middleware.ts` to `proxy.ts`, then deploy to Vercel. (done)
 
 ## Commands
 

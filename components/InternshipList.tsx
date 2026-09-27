@@ -11,6 +11,7 @@ interface InternshipListProps {
   onOpenFilters: () => void;
   favoriteIds: Set<string>;
   isLoggedIn: boolean;
+  onToggleFavorite: (id: string, next: boolean) => void;
 }
 
 export default function InternshipList({
@@ -21,6 +22,7 @@ export default function InternshipList({
   onOpenFilters,
   favoriteIds,
   isLoggedIn,
+  onToggleFavorite,
 }: InternshipListProps) {
   const router = useRouter();
 
@@ -57,6 +59,7 @@ export default function InternshipList({
               isSelected={internship.id === selectedId}
               isFavorited={favoriteIds.has(internship.id)}
               isLoggedIn={isLoggedIn}
+              onToggleFavorite={onToggleFavorite}
               onClick={() => {
                 if (window.innerWidth < MOBILE_BREAKPOINT_PX) {
                   router.push(`/internships/${internship.id}`);

@@ -11,7 +11,7 @@ export async function getInternships(): Promise<Internship[]> {
 
   if (error) {
     console.error("Failed to fetch internships:", error.message);
-    return [];
+    throw new Error("Couldn't load internships. Please try again in a moment.");
   }
 
   return data ?? [];
@@ -28,7 +28,7 @@ export async function getInternshipById(id: string): Promise<Internship | null> 
 
   if (error) {
     console.error("Failed to fetch internship:", error.message);
-    return null;
+    throw new Error("Couldn't load this internship. Please try again in a moment.");
   }
 
   return data ?? null;

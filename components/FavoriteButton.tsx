@@ -7,18 +7,19 @@ import { addFavorite, removeFavorite } from "@/lib/favoriteActions";
 
 interface FavoriteButtonProps {
   internshipId: string;
-  initialFavorited: boolean;
+  isFavorited: boolean;
   isLoggedIn: boolean;
+  onToggle: (internshipId: string, nextFavorited: boolean) => void;
   className?: string;
 }
 
 export default function FavoriteButton({
   internshipId,
-  initialFavorited,
+  isFavorited,
   isLoggedIn,
+  onToggle,
   className,
 }: FavoriteButtonProps) {
-  const [isFavorited, setIsFavorited] = useState(initialFavorited);
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
@@ -33,7 +34,7 @@ export default function FavoriteButton({
     }
 
     const nextFavorited = !isFavorited;
-    setIsFavorited(nextFavorited);
+    onToggle(internshipId, nextFavorited);
     setIsPending(true);
 
     const result = nextFavorited
@@ -42,7 +43,7 @@ export default function FavoriteButton({
 
     setIsPending(false);
     if (result.error) {
-      setIsFavorited(!nextFavorited);
+      onToggle(internshipId, !nextFavorited);
     }
   }
 
