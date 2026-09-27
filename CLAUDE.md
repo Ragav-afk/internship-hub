@@ -85,14 +85,37 @@ exist first.
 
 ## Current state
 
-- `components/InternshipBrowser.tsx` owns all client-side state (search text, filter selections,
-  selected internship id, filter-drawer open/closed) — the only component using `useState`.
+- `components/InternshipBrowser.tsx` reads filter/search state from the URL (via `useSearchParams`
+  and `router.replace`) instead of `useState`; the search box keeps one small local `useState`
+  buffer so typing feels instant before it's debounced into the URL (see `lib/searchParams.ts`).
 - `lib/filters.ts` holds the pure filtering logic (`filterInternships`, `getFieldOptions`,
   `getCityOptions`), kept separate from the Supabase-fetching code.
-- `lib/queries.ts` has `getInternships()` and `getInternshipById()`.
+- `lib/queries.ts` has `getInternships()`, `getInternshipById()`, `getCurrentUser()`,
+  `getFavoriteInternshipIds()`, and `getFavoriteInternships()` — the last two rely on the
+  `favorites` table's RLS policies to scope results to the current user, rather than an explicit
+  `user_id` filter.
+- Auth (sign up / log in / log out) goes through Server Actions in `lib/authActions.ts`, called
+  from `components/LoginForm.tsx`/`SignupForm.tsx` (via `useActionState`) and from a plain
+  `<form action={signOut}>` in `Navbar`. Error messages are mapped to friendly text in
+  `lib/authErrors.ts`.
+- Favorites: the `favorites` table + RLS policies live in `supabase/favorites.sql` (run manually in
+  the Supabase dashboard, same as `seed.sql` — not applied automatically).
+  `components/FavoriteButton.tsx` is self-contained: it holds its own local saved/unsaved
+  `useState`, initialized once from a server-fetched prop, and calls the add/remove Server Actions
+  in `lib/favoriteActions.ts` itself.
 - Responsive behavior is driven by Tailwind's `lg` breakpoint (1024px); `MOBILE_BREAKPOINT_PX` in
   `lib/constants.ts` must be kept in sync with it for the mobile-vs-desktop click routing in
   `components/InternshipList.tsx`.
+
+### Known issues
+
+- Each `FavoriteButton` holds its own local state instead of sharing one central store, so on
+  desktop the list card and the detail panel can briefly show different saved/unsaved states for
+  the *same* internship — toggling one doesn't update the other until you reselect the card or
+  refresh.
+- `middleware.ts` uses a file convention Next.js 16 has deprecated in favor of `proxy.ts` (same
+  behavior, new name/export). It still works today, but should be renamed before deploying — see
+  the deprecation warning `npm run build` prints.
 
 ## Build steps
 
@@ -108,10 +131,11 @@ Work through these in order; each step is one shippable feature on top of the la
 6. Detail panel — clicking a card shows full details on the right (own page on mobile). (done)
 7. Responsive pass — collapse the 3-column layout into a stacked mobile view. (done)
 7.5. Move filter and search state into URL query parameters so filtered views survive a refresh
-     and can be shared as links.
-8. Auth — sign up / log in / log out with Supabase email+password; navbar reflects login state.
-9. Favorites — favorite button, `favorites` table + RLS policies, "My Favorites" page.
-10. Polish + deploy — loading/empty/error states, then deploy to Vercel.
+     and can be shared as links. (done)
+8. Auth — sign up / log in / log out with Supabase email+password; navbar reflects login state. (done)
+9. Favorites — favorite button, `favorites` table + RLS policies, "My Favorites" page. (done)
+10. Polish + deploy — loading/empty/error states, then deploy to Vercel. (rename `middleware.ts` to
+    `proxy.ts` as part of this step — see Known issues above)
 
 ## Commands
 
