@@ -55,14 +55,18 @@ proxy.ts                # keeps the Supabase auth session alive across pages
 | company | text | |
 | description | text | |
 | field | text | e.g. "Software Development", "Marketing" — powers the field filter |
-| city | text | |
+| city | text | normalized during import (see `lib/import/mapping.ts`'s `resolveLocation`) |
+| country | text, nullable | e.g. "India", "United States"; `null` when not determinable — powers the country filter |
 | work_mode | text | `Remote` \| `On-site` \| `Hybrid` |
 | stipend_min | integer | INR, nullable, 0 = unpaid |
 | stipend_max | integer | INR, nullable |
 | stipend_note | text | optional free text, e.g. "Performance-based" |
+| currency | text, default `'INR'` | e.g. `INR`, `USD` — shown next to the stipend amount |
 | duration | text | e.g. "3 months" |
 | apply_url | text | external application link |
-| source | text | where the listing was collected from, e.g. "Internshala" |
+| source | text | where the listing was collected from, e.g. "Internshala", "Greenhouse" |
+| external_id | text, nullable | source's own job id; `null` for hand-seeded rows. Unique per `(source, external_id)` |
+| is_active | boolean, default `true` | set `false` when an import run no longer sees the listing (soft delete) |
 | posted_at | timestamptz | for "Newest" sorting |
 | created_at | timestamptz, default now() | |
 
@@ -118,6 +122,39 @@ exist first.
 - Cards (`components/InternshipCard.tsx`) are keyboard-accessible: `role="button"`, `tabIndex={0}`,
   and an `onKeyDown` that activates on Enter/Space (guarded so a bubbled keydown from the focused
   bookmark button doesn't also select the card).
+- Real listings are pulled from Greenhouse/Lever/Ashby's public per-company job-board APIs (no
+  scraping, no auth needed) via `npm run import:internships`, which runs `scripts/import/run.ts`.
+  The actual fetch/map/upsert logic lives in `lib/import/` (`companies.ts` for the curated company
+  list, `sources/{greenhouse,lever,ashby}.ts` for per-source fetching, `mapping.ts` for shared
+  field-mapping helpers, `runImport.ts` for orchestration, `supabaseAdmin.ts` for the service-role
+  client) shared by both entrypoints: the manual script (`scripts/import/run.ts`, run via
+  `npm run import:internships`) and the scheduled route (`app/api/cron/import/route.ts`, triggered
+  daily by Vercel Cron per `vercel.json`, protected by a `CRON_SECRET` bearer-token check — Vercel
+  sends that header automatically, so a stranger guessing the URL gets a 401). The importer upserts
+  on `(source, external_id)` — a plain `unique(source, external_id)` constraint, not a partial index;
+  a partial index can't be targeted by Supabase's `.upsert(..., { onConflict })`, which emits a plain
+  `ON CONFLICT (source, external_id)` — and soft-deletes rows that drop out of a source's feed by
+  setting `is_active = false`. `getInternships()` filters to `is_active = true`, but
+  `getInternshipById()` doesn't, so an existing favorite never 404s just because the listing was
+  removed upstream. Needs `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` in `.env.local` (never
+  `NEXT_PUBLIC_`, only read from `lib/import/supabaseAdmin.ts` and the cron route) — both also need
+  to be added to Vercel's project env vars for the scheduled route to work in production — and the
+  `supabase/external_import.sql` migration run manually first, same convention as
+  `seed.sql`/`favorites.sql`. Indian government sources (data.gov.in, NCS, PM Internship Scheme) were
+  investigated but none had a confirmed usable public API as of this writing.
+- Location normalization: source location strings are inconsistent (e.g. "Bengaluru-VTP, India",
+  "New York, NY (HQ)", "Bellevue, WA; Menlo Park, CA" for one posting spanning multiple offices).
+  `resolveLocation()` in `lib/import/mapping.ts` strips office-code suffixes and parenthetical notes,
+  keeps only the first office when a posting lists several, and derives a `country` from a small
+  growable dictionary (country names/aliases plus US state codes) — unrecognized text becomes
+  `country: null` rather than a guess. `CITY_ALIASES` in the same file canonicalizes known spelling
+  variants (e.g. "Bengaluru" → "Bangalore", matching `seed.sql`'s spelling). The country filter
+  (`FilterSidebar.tsx`, above Location) only restricts results when at least one country checkbox is
+  checked, same pattern as the other filters — a `null`-country row just doesn't match any checkbox.
+- Stipend filtering across currencies: `lib/currency.ts` holds a small hand-maintained
+  `EXCHANGE_RATES_TO_INR` table, used only by `lib/filters.ts`'s minimum-stipend comparison (the
+  slider in `FilterSidebar.tsx` is INR-denominated). `formatStipend()` in `lib/format.ts` is
+  unaffected — display always shows the listing's real currency/amount, never a converted one.
 
 ## Build steps
 
@@ -138,8 +175,15 @@ Work through these in order; each step is one shippable feature on top of the la
 9. Favorites — favorite button, `favorites` table + RLS policies, "My Favorites" page. (done)
 10. Polish + deploy — loading/empty/error states, keyboard accessibility, fix favorite-state sync,
     rename `middleware.ts` to `proxy.ts`, then deploy to Vercel. (done)
+11. Real listings — import from Greenhouse/Lever/Ashby via a manual script and a scheduled Vercel
+    Cron route (`lib/import/`, `scripts/import/`, `app/api/cron/import/`), `currency`/`external_id`/
+    `is_active`/`last_seen_at` columns added via `supabase/external_import.sql`, multi-currency
+    stipend filtering via `lib/currency.ts`. (done — Indian government sources still pending, see
+    "Current state" above)
 
 ## Commands
 
 - `npm run dev` — start the local dev server.
 - `npm run lint` — run ESLint.
+- `npm run import:internships` — fetch/import real listings from Greenhouse/Lever/Ashby (needs
+  `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and `supabase/external_import.sql` run first).

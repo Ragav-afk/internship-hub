@@ -7,6 +7,7 @@ export async function getInternships(): Promise<Internship[]> {
   const { data, error } = await supabase
     .from("internships")
     .select("*")
+    .eq("is_active", true)
     .order("posted_at", { ascending: false });
 
   if (error) {

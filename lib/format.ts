@@ -6,9 +6,23 @@ export function formatLocation({ city, work_mode }: LocationFields): string {
   return city === work_mode ? city : `${city} · ${work_mode}`;
 }
 
-type StipendFields = Pick<Internship, "stipend_min" | "stipend_max" | "stipend_note">;
+type StipendFields = Pick<Internship, "stipend_min" | "stipend_max" | "stipend_note" | "currency">;
 
-export function formatStipend({ stipend_min, stipend_max, stipend_note }: StipendFields): string {
+// Symbols for the currencies we actually expect to see. Anything else falls
+// back to showing the raw currency code (e.g. "GBP 2,000") instead of a
+// symbol we'd have to guess at.
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  INR: "₹",
+  USD: "$",
+};
+
+function formatAmount(amount: number, currency: string): string {
+  const symbol = CURRENCY_SYMBOLS[currency];
+  const locale = currency === "INR" ? "en-IN" : "en-US";
+  return symbol ? `${symbol}${amount.toLocaleString(locale)}` : `${currency} ${amount.toLocaleString(locale)}`;
+}
+
+export function formatStipend({ stipend_min, stipend_max, stipend_note, currency }: StipendFields): string {
   if (stipend_min === null || stipend_max === null) {
     return "Stipend not disclosed";
   }
@@ -19,8 +33,8 @@ export function formatStipend({ stipend_min, stipend_max, stipend_note }: Stipen
 
   const amount =
     stipend_min === stipend_max
-      ? `₹${stipend_min.toLocaleString("en-IN")}/month`
-      : `₹${stipend_min.toLocaleString("en-IN")} – ₹${stipend_max.toLocaleString("en-IN")}/month`;
+      ? `${formatAmount(stipend_min, currency)}/month`
+      : `${formatAmount(stipend_min, currency)} – ${formatAmount(stipend_max, currency)}/month`;
 
   return stipend_note ? `${amount} (${stipend_note})` : amount;
 }

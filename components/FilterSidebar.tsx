@@ -9,6 +9,10 @@ interface FilterSidebarProps {
   selectedFields: string[];
   onFieldToggle: (field: string) => void;
 
+  countryOptions: string[];
+  selectedCountries: string[];
+  onCountryToggle: (country: string) => void;
+
   cityOptions: string[];
   selectedCities: string[];
   onCityToggle: (city: string) => void;
@@ -27,6 +31,9 @@ export default function FilterSidebar({
   fieldOptions,
   selectedFields,
   onFieldToggle,
+  countryOptions,
+  selectedCountries,
+  onCountryToggle,
   cityOptions,
   selectedCities,
   onCityToggle,
@@ -91,6 +98,23 @@ export default function FilterSidebar({
                 onChange={() => onFieldToggle(field)}
               />
               {field}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="mb-6">
+        <legend className="mb-2 text-sm font-semibold text-gray-700">Country</legend>
+        <div className="flex flex-col gap-2">
+          {countryOptions.map((country) => (
+            <label key={country} className="flex items-center gap-2 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                className="accent-blue-600"
+                checked={selectedCountries.includes(country)}
+                onChange={() => onCountryToggle(country)}
+              />
+              {country}
             </label>
           ))}
         </div>

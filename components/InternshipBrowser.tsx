@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AuthUser, Internship, WorkMode } from "@/lib/types";
-import { filterInternships, getCityOptions, getFieldOptions } from "@/lib/filters";
+import { filterInternships, getCityOptions, getCountryOptions, getFieldOptions } from "@/lib/filters";
 import { parseFiltersFromParams } from "@/lib/searchParams";
 import Navbar from "@/components/Navbar";
 import FilterSidebar from "@/components/FilterSidebar";
@@ -82,7 +82,11 @@ export default function InternshipBrowser({
     setSearchText(filters.search);
   }
 
-  function setParams(updates: Record<string, string | null>) {
+  // Deliberate filter changes (checkbox toggles, the stipend slider on
+  // release, card selection) use push, so each one is its own back-button
+  // step. Only the debounced search-text write below passes "replace" - a
+  // history entry per keystroke would make Back useless for typing.
+  function setParams(updates: Record<string, string | null>, method: "push" | "replace" = "push") {
     const params = new URLSearchParams(searchParamsRef.current.toString());
     for (const [key, value] of Object.entries(updates)) {
       if (value === null || value === "") {
@@ -92,15 +96,13 @@ export default function InternshipBrowser({
       }
     }
     const query = params.toString();
-    // replace (not push) so filtering and typing never add entries to the
-    // browser's back/forward history.
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    router[method](query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
   useEffect(() => {
     if (searchText === filters.search) return;
     const timeout = setTimeout(() => {
-      setParams({ q: searchText });
+      setParams({ q: searchText }, "replace");
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,6 +122,13 @@ export default function InternshipBrowser({
     setParams({ city: next.join(",") || null });
   }
 
+  function toggleCountry(country: string) {
+    const next = filters.countries.includes(country)
+      ? filters.countries.filter((c) => c !== country)
+      : [...filters.countries, country];
+    setParams({ country: next.join(",") || null });
+  }
+
   function toggleWorkMode(mode: WorkMode) {
     const next = filters.workModes.includes(mode)
       ? filters.workModes.filter((m) => m !== mode)
@@ -137,11 +146,13 @@ export default function InternshipBrowser({
 
   const fieldOptions = getFieldOptions(internships);
   const cityOptions = getCityOptions(internships);
+  const countryOptions = getCountryOptions(internships);
 
   const filteredInternships = filterInternships(internships, {
     search: searchText,
     fields: filters.fields,
     cities: filters.cities,
+    countries: filters.countries,
     workModes: filters.workModes,
     minStipend: filters.minStipend,
   });
@@ -154,6 +165,7 @@ export default function InternshipBrowser({
   const activeFilterCount =
     filters.fields.length +
     filters.cities.length +
+    filters.countries.length +
     filters.workModes.length +
     (filters.minStipend > 0 ? 1 : 0);
 
@@ -165,6 +177,9 @@ export default function InternshipBrowser({
           fieldOptions={fieldOptions}
           selectedFields={filters.fields}
           onFieldToggle={toggleField}
+          countryOptions={countryOptions}
+          selectedCountries={filters.countries}
+          onCountryToggle={toggleCountry}
           cityOptions={cityOptions}
           selectedCities={filters.cities}
           onCityToggle={toggleCity}

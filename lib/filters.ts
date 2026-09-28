@@ -1,9 +1,11 @@
+import { toInr } from "./currency";
 import { Internship, WorkMode } from "./types";
 
 export interface InternshipFilters {
   search: string;
   fields: string[];
   cities: string[];
+  countries: string[];
   workModes: WorkMode[];
   minStipend: number;
 }
@@ -20,7 +22,7 @@ function passesSearch(internship: Internship, search: string): boolean {
 function passesMinStipend(internship: Internship, minStipend: number): boolean {
   if (minStipend === 0) return true;
   if (internship.stipend_max === null) return true;
-  return internship.stipend_max >= minStipend;
+  return toInr(internship.stipend_max, internship.currency) >= minStipend;
 }
 
 export function filterInternships(
@@ -31,6 +33,12 @@ export function filterInternships(
     if (!passesSearch(internship, filters.search)) return false;
     if (filters.fields.length > 0 && !filters.fields.includes(internship.field)) return false;
     if (filters.cities.length > 0 && !filters.cities.includes(internship.city)) return false;
+    if (
+      filters.countries.length > 0 &&
+      (internship.country === null || !filters.countries.includes(internship.country))
+    ) {
+      return false;
+    }
     if (
       filters.workModes.length > 0 &&
       !filters.workModes.includes(internship.work_mode)
@@ -48,4 +56,11 @@ export function getFieldOptions(internships: Internship[]): string[] {
 
 export function getCityOptions(internships: Internship[]): string[] {
   return Array.from(new Set(internships.map((i) => i.city))).sort();
+}
+
+export function getCountryOptions(internships: Internship[]): string[] {
+  const countries = internships
+    .map((i) => i.country)
+    .filter((country): country is string => country !== null);
+  return Array.from(new Set(countries)).sort();
 }

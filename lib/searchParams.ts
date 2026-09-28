@@ -4,6 +4,7 @@ export interface ParsedFilters {
   search: string;
   fields: string[];
   cities: string[];
+  countries: string[];
   workModes: WorkMode[];
   minStipend: number;
   selectedId: string | null;
@@ -27,6 +28,7 @@ export function parseFiltersFromParams(params: URLSearchParams): ParsedFilters {
     search: params.get("q") ?? "",
     fields: parseList(params.get("field")),
     cities: parseList(params.get("city")),
+    countries: parseList(params.get("country")),
     workModes: parseList(params.get("mode")).filter(
       (mode): mode is WorkMode => VALID_WORK_MODES.includes(mode as WorkMode)
     ),

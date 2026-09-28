@@ -11,13 +11,17 @@ export interface Internship {
   description: string;
   field: string;
   city: string;
+  country: string | null;
   work_mode: WorkMode;
   stipend_min: number | null;
   stipend_max: number | null;
   stipend_note: string | null;
+  currency: string;
   duration: string;
   apply_url: string;
   source: string;
+  external_id: string | null;
+  is_active: boolean;
   posted_at: string;
   created_at: string;
 }
