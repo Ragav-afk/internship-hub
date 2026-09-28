@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { X } from "lucide-react";
 import { WorkMode } from "@/lib/types";
 
@@ -36,6 +37,26 @@ export default function FilterSidebar({
   isOpen,
   onClose,
 }: FilterSidebarProps) {
+  // The slider needs to update instantly while dragging, but writing to the
+  // URL (via onMinStipendChange) on every tick re-renders this component
+  // mid-drag and the browser loses the drag. So drag position lives here
+  // locally, and only gets committed to the URL once the drag/keypress ends.
+  const [localMinStipend, setLocalMinStipend] = useState(minStipend);
+
+  // Keep the local value in sync if minStipend changes from outside a drag -
+  // e.g. browser back/forward. Mirrors the searchText/syncedSearch pattern in
+  // InternshipBrowser.tsx: runs during render, not an effect, so it applies
+  // immediately.
+  const [syncedMinStipend, setSyncedMinStipend] = useState(minStipend);
+  if (minStipend !== syncedMinStipend) {
+    setSyncedMinStipend(minStipend);
+    setLocalMinStipend(minStipend);
+  }
+
+  function commitMinStipend() {
+    onMinStipendChange(localMinStipend);
+  }
+
   return (
     <>
       {isOpen && (
@@ -117,12 +138,14 @@ export default function FilterSidebar({
             min={0}
             max={50000}
             step={5000}
-            value={minStipend}
-            onChange={(e) => onMinStipendChange(Number(e.target.value))}
+            value={localMinStipend}
+            onChange={(e) => setLocalMinStipend(Number(e.target.value))}
+            onPointerUp={commitMinStipend}
+            onKeyUp={commitMinStipend}
             className="w-full accent-blue-600"
           />
           <p className="text-xs text-gray-500">
-            ₹{minStipend.toLocaleString("en-IN")}/month and up
+            ₹{localMinStipend.toLocaleString("en-IN")}/month and up
           </p>
         </div>
       </fieldset>
