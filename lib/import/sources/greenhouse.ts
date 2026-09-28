@@ -1,5 +1,5 @@
 import { CompanyConfig, ImportRow } from "../types";
-import { isInternshipTitle, mapField, resolveCompensation, resolveLocation, resolveWorkMode, stripHtml } from "../mapping";
+import { isInternshipTitle, mapField, resolveCompensation, resolveDefaultCurrency, resolveLocation, resolveWorkMode, stripHtml } from "../mapping";
 
 // Shape confirmed against a live board (boards-api.greenhouse.io/v1/boards/robinhood/jobs) -
 // Greenhouse doesn't expose a structured compensation field on any of the
@@ -43,7 +43,7 @@ export async function fetchGreenhouseInternships(company: CompanyConfig): Promis
         city,
         country,
         work_mode: workMode,
-        ...resolveCompensation(null, company.defaultCurrency),
+        ...resolveCompensation(null, resolveDefaultCurrency(country, company)),
         duration: null,
         apply_url: job.absolute_url,
         source: "Greenhouse",

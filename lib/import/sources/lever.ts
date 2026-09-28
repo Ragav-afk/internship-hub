@@ -1,5 +1,5 @@
 import { CompanyConfig, ImportRow } from "../types";
-import { isInternshipSignal, isInternshipTitle, mapField, resolveCompensation, resolveLocation, resolveWorkMode } from "../mapping";
+import { isInternshipSignal, isInternshipTitle, mapField, resolveCompensation, resolveDefaultCurrency, resolveLocation, resolveWorkMode } from "../mapping";
 
 // Shape confirmed against a live board (api.lever.co/v0/postings/theathletic) -
 // descriptionPlain is already plain text (no HTML stripping needed), and
@@ -49,7 +49,7 @@ export async function fetchLeverInternships(company: CompanyConfig): Promise<Imp
         city,
         country,
         work_mode: workMode,
-        ...resolveCompensation(null, company.defaultCurrency),
+        ...resolveCompensation(null, resolveDefaultCurrency(country, company)),
         duration: null,
         apply_url: job.hostedUrl,
         source: "Lever",

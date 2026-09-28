@@ -103,6 +103,8 @@ function stripOfficeCodeSuffix(city: string): string {
 const CITY_ALIASES: Record<string, string> = {
   bengaluru: "Bangalore",
   bangalore: "Bangalore",
+  gurgaon: "Gurgaon",
+  gurugram: "Gurgaon",
 };
 
 function canonicalizeCity(city: string): string {
@@ -138,6 +140,29 @@ function detectCountry(locationSegment: string): string | null {
   return null;
 }
 
+// Fallback for when a location is just a bare city name with no country or
+// state attached at all - confirmed happening for real (Tower Research
+// Capital's Greenhouse board gives "Gift City"/"gurgaon" with no suffix,
+// Paytm's Lever board gives bare "Bangalore"/"Noida"/"Gurugram"). Without
+// this, those rows silently fall back to the company's defaultCurrency
+// instead of being recognized as India - which is a real correctness bug,
+// not just a cosmetic one, for a company whose board mixes countries. Keyed
+// on the same canonical city name CITY_ALIASES produces.
+const CITY_COUNTRY_FALLBACK: Record<string, string> = {
+  bangalore: "India",
+  mumbai: "India",
+  delhi: "India",
+  "new delhi": "India",
+  noida: "India",
+  gurgaon: "India", // canonicalizeCity() already folds "Gurugram" into this
+  hyderabad: "India",
+  pune: "India",
+  chennai: "India",
+  kolkata: "India",
+  ahmedabad: "India",
+  "gift city": "India",
+};
+
 // Source location strings are messy and inconsistent - real examples we've
 // seen include "Bengaluru-VTP, India", "New York, NY (HQ)", and "Bellevue,
 // WA; Menlo Park, CA" (multiple offices on one posting). This turns that
@@ -155,17 +180,32 @@ export function resolveLocation(rawLocationText: string, workMode: WorkMode): Re
   // string), so a posting spanning two countries doesn't get a country that
   // doesn't match the city we kept.
   const firstLocation = cleaned.split(";")[0].trim();
-  const country = detectCountry(firstLocation);
+  const textCountry = detectCountry(firstLocation);
 
   if (workMode === "Remote") {
-    return { city: "Remote", country };
+    return { city: "Remote", country: textCountry };
   }
 
   const cityPart = firstLocation.split(",")[0] ?? "";
   const strippedCity = stripOfficeCodeSuffix(cityPart);
   const city = strippedCity ? canonicalizeCity(strippedCity) : "Unspecified";
 
+  // Text-based detection (explicit "India"/state code) takes priority; only
+  // fall back to the city-name lookup when the raw text gave no signal at
+  // all, so an explicitly-stated different country is never overridden.
+  const country = textCountry ?? CITY_COUNTRY_FALLBACK[city.toLowerCase()] ?? null;
+
   return { city, country };
+}
+
+// A single per-company default currency isn't granular enough for companies
+// whose board spans multiple countries (e.g. a US-HQ'd firm with an India
+// office, or vice versa - confirmed happening for real: Tower Research
+// Capital's board mixes New York/London/Singapore/Gurgaon postings). When a
+// job's own resolved location is India, use INR regardless of the company's
+// overall default - a safer per-job signal than the company-wide fallback.
+export function resolveDefaultCurrency(country: string | null, company: { defaultCurrency: string }): string {
+  return country === "India" ? "INR" : company.defaultCurrency;
 }
 
 interface RawCompensation {
